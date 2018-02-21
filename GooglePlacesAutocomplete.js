@@ -140,7 +140,6 @@ export default class GooglePlacesAutocomplete extends Component {
       res = [...this.props.predefinedPlaces];
       if (this.props.currentLocation === true) {
         res.unshift({
-          id: 'currentLocationID',
           description: this.props.currentLocationLabel,
           isCurrentLocation: true,
         });
@@ -219,7 +218,6 @@ export default class GooglePlacesAutocomplete extends Component {
       (position) => {
         if (this.props.nearbyPlacesAPI === 'None') {
           let currentLocation = {
-            id: 'currentLocationID',
             description: this.props.currentLocationLabel,
             geometry: {
               location: {
@@ -308,6 +306,9 @@ export default class GooglePlacesAutocomplete extends Component {
         placeid: rowData.place_id,
         language: this.props.query.language,
       }));
+      if (this.props.query.origin !== null) {
+        request.setRequestHeader('Referer', this.props.query.origin);
+      }
       request.send();
     } else if (rowData.isCurrentLocation === true) {
 
@@ -449,6 +450,9 @@ export default class GooglePlacesAutocomplete extends Component {
       }
 
       request.open('GET', url);
+      if (this.props.query.origin !== null) {
+        request.setRequestHeader('Referer', this.props.query.origin);
+      }
       request.send();
     } else {
       this._results = [];
@@ -487,6 +491,9 @@ export default class GooglePlacesAutocomplete extends Component {
         }
       };
       request.open('GET', 'https://maps.googleapis.com/maps/api/place/autocomplete/json?&input=' + encodeURIComponent(text) + '&' + Qs.stringify(this.props.query));
+      if (this.props.query.origin !== null) {
+        request.setRequestHeader('Referer', this.props.query.origin);
+      }
       request.send();
     } else {
       this._results = [];
@@ -656,7 +663,7 @@ export default class GooglePlacesAutocomplete extends Component {
         <FlatList
           style={[defaultStyles.listView, this.props.styles.listView]}
           data={this.state.dataSource}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.reference}
           extraData={[this.state.dataSource, this.props]}
           ItemSeparatorComponent={this._renderSeparator}
           renderItem={({ item }) => this._renderRow(item)}
@@ -682,7 +689,6 @@ export default class GooglePlacesAutocomplete extends Component {
         >
           {this._renderLeftButton()}
           <TextInput
-            { ...userProps }
             ref="textInput"
             returnKeyType={this.props.returnKeyType}
             autoFocus={this.props.autoFocus}
@@ -695,6 +701,7 @@ export default class GooglePlacesAutocomplete extends Component {
             onFocus={onFocus ? () => {this._onFocus(); onFocus()} : this._onFocus}
             clearButtonMode="while-editing"
             underlineColorAndroid={this.props.underlineColorAndroid}
+            { ...userProps }
           />
           {this._renderRightButton()}
         </View>
